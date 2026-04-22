@@ -3,23 +3,25 @@ FROM zoraxydocker/zoraxy:latest
 # Plugin version
 ARG PLUGIN_VERSION=v1.2.1
 
-# Create plugin directory
-RUN mkdir -p /opt/zoraxy/plugins/zoraxycrowdsecbouncer
+# Git installieren um das Repo zu klonen
+RUN apk add --no-cache git
 
-# Download plugin binary
+# Plugin Verzeichnis erstellen
+RUN mkdir -p /opt/zoraxy/plugin/zoraxycrowdsecbouncer
+
+# Komplettes Plugin Repository klonen
+RUN git clone --depth 1 --branch ${PLUGIN_VERSION} \
+    https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer.git \
+    /opt/zoraxy/plugin/zoraxycrowdsecbouncer
+
+# Vorkompilierte Binary herunterladen (ersetzt die im Repo falls vorhanden)
 ADD https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer/releases/download/${PLUGIN_VERSION}/zoraxycrowdsecbouncer \
-    /opt/zoraxy/plugins/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
+    /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
 
-# Make plugin executable
-RUN chmod +x /opt/zoraxy/plugins/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
+# Binary ausführbar machen
+RUN chmod +x /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
 
-# Debug: Zeige wo Zoraxy liegt beim Build
-RUN echo "=== Zoraxy Binary suchen ===" && \
-    find / -name "zoraxy" -type f 2>/dev/null || echo "Nicht gefunden via find" && \
-    which zoraxy 2>/dev/null || echo "Nicht im PATH" && \
-    cat /proc/1/cmdline 2>/dev/null || echo "cmdline nicht lesbar"
-
-# Copy entrypoint
+# Entrypoint kopieren
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
