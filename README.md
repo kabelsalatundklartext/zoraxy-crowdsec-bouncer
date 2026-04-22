@@ -89,7 +89,7 @@ Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `confi
 1. Gehe in Unraid zu **Docker** → **Add Container**
 2. Scrolle ganz unten zu **Template URL** und füge ein:
    ```
-   https://raw.githubusercontent.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer/main/unraid-template.xml
+   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/unraid-template.xml
    ```
 3. Klicke **Load** – das Template wird automatisch befüllt
 
@@ -253,7 +253,7 @@ Enter these values directly in Unraid (or docker-compose) – the `config.yaml` 
 1. Go to Unraid **Docker** → **Add Container**
 2. Scroll to the bottom and find **Template URL**, paste:
    ```
-   https://raw.githubusercontent.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer/main/unraid-template.xml
+   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/unraid-template.xml
    ```
 3. Click **Load** – the template fills in automatically
 
@@ -349,7 +349,7 @@ After the first start:
 ```yaml
 services:
   zoraxy:
-    image: DEIN_DOCKERHUB_NAME/zoraxy-crowdsec-bouncer:latest
+    image: ghcr.io/kabelsalatundklartext/zoraxy-crowdsec-bouncer:latest
     container_name: zoraxy
     restart: unless-stopped
     ports:

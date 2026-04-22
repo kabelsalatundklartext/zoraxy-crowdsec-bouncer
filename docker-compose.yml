@@ -2,7 +2,7 @@ services:
   zoraxy:
     build: .
     # oder direkt das fertige Image benutzen (nach dem Build auf Docker Hub):
-    # image: DEIN_DOCKERHUB_NAME/zoraxy-crowdsec-bouncer:latest
+    # image: ghcr.io/kabelsalatundklartext/zoraxy-crowdsec-bouncer:latest
     container_name: zoraxy
     restart: unless-stopped
     ports:

@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>zoraxy-crowdsec-bouncer</Name>
-  <Repository>DEIN_DOCKERHUB_NAME/zoraxy-crowdsec-bouncer:latest</Repository>
-  <Registry>https://hub.docker.com/r/DEIN_DOCKERHUB_NAME/zoraxy-crowdsec-bouncer</Registry>
+  <Repository>ghcr.io/kabelsalatundklartext/zoraxy-crowdsec-bouncer:latest</Repository>
+  <Registry>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/pkgs/container/zoraxy-crowdsec-bouncer</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer</Support>
-  <Project>https://github.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer</Project>
+  <Support>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</Support>
+  <Project>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</Project>
   <Overview>
     Zoraxy reverse proxy with the CrowdSec Bouncer plugin pre-installed.
     The config.yaml is created automatically on first start using the variables below.
@@ -19,7 +19,7 @@
   </Overview>
   <Category>Network:Proxy</Category>
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer/main/unraid-template.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/unraid-template.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/tobychui/zoraxy/main/web/img/logo.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
   <Description>Zoraxy with CrowdSec Bouncer plugin. config.yaml is auto-created from the variables below.</Description>
