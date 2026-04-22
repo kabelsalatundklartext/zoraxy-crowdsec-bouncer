@@ -4,14 +4,14 @@ FROM zoraxydocker/zoraxy:latest
 ARG PLUGIN_VERSION=v1.2.1
 
 # Create plugin directory
-RUN mkdir -p /opt/zoraxy/plugin/zoraxycrowdsecbouncer
+RUN mkdir -p /opt/zoraxy/plugins/zoraxycrowdsecbouncer
 
 # Download plugin binary
 ADD https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer/releases/download/${PLUGIN_VERSION}/zoraxycrowdsecbouncer \
-    /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
+    /opt/zoraxy/plugins/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
 
 # Make plugin executable
-RUN chmod +x /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
+RUN chmod +x /opt/zoraxy/plugins/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
 
 # Debug: Zeige wo Zoraxy liegt beim Build
 RUN echo "=== Zoraxy Binary suchen ===" && \

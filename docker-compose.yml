@@ -11,7 +11,7 @@ services:
       - "8000:8000"
     volumes:
       - ./config:/opt/zoraxy/config/
-      - ./plugin:/opt/zoraxy/plugin/
+      - ./plugin:/opt/zoraxy/plugins/
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime
     extra_hosts:

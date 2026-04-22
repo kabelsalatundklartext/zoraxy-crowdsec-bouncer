@@ -69,7 +69,7 @@ Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `confi
 | Container-Pfad | Beschreibung | Unraid Standard-Pfad |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy Konfiguration, Zertifikate, Logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugin/` | Plugin-Daten inkl. automatisch erstellter `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugins/` | Plugin-Daten inkl. automatisch erstellter `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker-Socket (für Docker-Modus) | `/var/run/docker.sock` |
 | `/etc/localtime` | Zeitzone vom Host | `/etc/localtime` |
 
@@ -233,7 +233,7 @@ Enter these values directly in Unraid (or docker-compose) – the `config.yaml` 
 | Container Path | Description | Unraid Default Path |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy config, certificates, logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugin/` | Plugin data incl. auto-created `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugins/` | Plugin data incl. auto-created `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker socket (for Docker mode) | `/var/run/docker.sock` |
 | `/etc/localtime` | Timezone from host | `/etc/localtime` |
 
@@ -358,7 +358,7 @@ services:
       - "8000:8000"
     volumes:
       - ./config:/opt/zoraxy/config/
-      - ./plugin:/opt/zoraxy/plugin/
+      - ./plugin:/opt/zoraxy/plugins/
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime
     extra_hosts:

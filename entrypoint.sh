@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PLUGIN_DIR="/opt/zoraxy/plugin/zoraxycrowdsecbouncer"
+PLUGIN_DIR="/opt/zoraxy/plugins/zoraxycrowdsecbouncer"
 CONFIG_FILE="$PLUGIN_DIR/config.yaml"
 
 echo "=== Zoraxy CrowdSec Bouncer Setup ==="
