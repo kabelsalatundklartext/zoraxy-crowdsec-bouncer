@@ -20,7 +20,7 @@
   <Category>Network:Proxy</Category>
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/zoraxy-crowdsec-bouncer.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/tobychui/zoraxy/main/web/img/logo.png</Icon>
+  <Icon>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/Zoraxy-Crowdsec.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
   <Description>Zoraxy with CrowdSec Bouncer plugin. config.yaml is auto-created from the variables below.</Description>
 
