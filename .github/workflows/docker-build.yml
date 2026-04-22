@@ -1,0 +1,53 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  workflow_dispatch: # manueller Start über GitHub UI möglich
+
+env:
+  IMAGE_NAME: ghcr.io/kabelsalatundklartext/zoraxy-crowdsec-bouncer
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # nötig um auf ghcr.io zu pushen
+
+    steps:
+      - name: 📥 Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: 🔑 Bei GitHub Container Registry anmelden
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker Metadaten & Tags erstellen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            # bei Push auf main -> :latest
+            type=raw,value=latest,enable={{is_default_branch}}
+            # bei Git Tag z.B. v1.0.0 -> :1.0.0 und :1.0 und :1
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # immer den Git-SHA als Tag mit anhängen
+            type=sha,prefix=sha-
+
+      - name: 🐳 Docker Image bauen und pushen
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
