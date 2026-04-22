@@ -11,14 +11,7 @@
   <Project>https://github.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer</Project>
   <Overview>
     Zoraxy reverse proxy with the CrowdSec Bouncer plugin pre-installed.
-    Zoraxy is a general purpose HTTP reverse proxy written in Go.
-    This image includes the zoraxy_crowdsec_bouncer plugin by AnthonyMichaelTDM,
-    which connects Zoraxy to your CrowdSec instance to block malicious IPs.
-
-    After starting the container:
-    1. Open the Zoraxy WebUI on port 8000
-    2. Go to Plugins and activate the CrowdSec Bouncer
-    3. Edit /opt/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml with your CrowdSec API key
+    The config.yaml is created automatically on first start using the variables below.
 
     Credits:
     - Zoraxy by tobychui (AGPL v3): https://github.com/tobychui/zoraxy
@@ -29,14 +22,8 @@
   <TemplateURL>https://raw.githubusercontent.com/DEIN_GITHUB_NAME/zoraxy-crowdsec-bouncer/main/unraid-template.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/tobychui/zoraxy/main/web/img/logo.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
-  <PostArgs/>
-  <CPUset/>
-  <DateInstalled/>
-  <DonateText/>
-  <DonateLink/>
-  <Description>
-    Zoraxy with CrowdSec Bouncer plugin pre-installed. Block malicious IPs automatically using your CrowdSec instance.
-  </Description>
+  <Description>Zoraxy with CrowdSec Bouncer plugin. config.yaml is auto-created from the variables below.</Description>
+
   <Networking>
     <Mode>bridge</Mode>
     <Publish>
@@ -57,6 +44,7 @@
       </Port>
     </Publish>
   </Networking>
+
   <Data>
     <Volume>
       <HostDir>/mnt/user/appdata/zoraxy/config</HostDir>
@@ -79,7 +67,28 @@
       <Mode>ro</Mode>
     </Volume>
   </Data>
+
   <Environment>
+    <Variable>
+      <Value></Value>
+      <Name>CROWDSEC_API_KEY</Name>
+      <Mode/>
+    </Variable>
+    <Variable>
+      <Value>http://crowdsec:8080</Value>
+      <Name>CROWDSEC_AGENT_URL</Name>
+      <Mode/>
+    </Variable>
+    <Variable>
+      <Value>warning</Value>
+      <Name>CROWDSEC_LOG_LEVEL</Name>
+      <Mode/>
+    </Variable>
+    <Variable>
+      <Value>false</Value>
+      <Name>CROWDSEC_CLOUDFLARE</Name>
+      <Mode/>
+    </Variable>
     <Variable>
       <Value>true</Value>
       <Name>FASTGEOIP</Name>
@@ -91,12 +100,53 @@
       <Mode/>
     </Variable>
   </Environment>
-  <Labels/>
-  <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="Zoraxy Management WebUI" Type="Port" Display="always" Required="true" Mask="false">8000</Config>
-  <Config Name="HTTP Port" Target="80" Default="80" Mode="tcp" Description="HTTP traffic" Type="Port" Display="always" Required="true" Mask="false">80</Config>
-  <Config Name="HTTPS Port" Target="443" Default="443" Mode="tcp" Description="HTTPS traffic" Type="Port" Display="always" Required="true" Mask="false">443</Config>
-  <Config Name="Config Folder" Target="/opt/zoraxy/config/" Default="/mnt/user/appdata/zoraxy/config" Mode="rw" Description="Zoraxy config data" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/config</Config>
-  <Config Name="Plugin Folder" Target="/opt/zoraxy/plugin/" Default="/mnt/user/appdata/zoraxy/plugin" Mode="rw" Description="Plugin data (including CrowdSec bouncer config)" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/plugin</Config>
-  <Config Name="Fast GeoIP" Target="FASTGEOIP" Default="true" Mode="" Description="Use fast GeoIP database" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
-  <Config Name="Docker Mode" Target="DOCKER" Default="true" Mode="" Description="Run in Docker compatibility mode" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+
+  <!-- Ports -->
+  <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp"
+    Description="Zoraxy Management WebUI"
+    Type="Port" Display="always" Required="true" Mask="false">8000</Config>
+
+  <Config Name="HTTP Port" Target="80" Default="80" Mode="tcp"
+    Description="HTTP traffic"
+    Type="Port" Display="always" Required="true" Mask="false">80</Config>
+
+  <Config Name="HTTPS Port" Target="443" Default="443" Mode="tcp"
+    Description="HTTPS traffic"
+    Type="Port" Display="always" Required="true" Mask="false">443</Config>
+
+  <!-- Pfade -->
+  <Config Name="Config Folder" Target="/opt/zoraxy/config/" Default="/mnt/user/appdata/zoraxy/config" Mode="rw"
+    Description="Zoraxy Konfiguration, Zertifikate und Logs"
+    Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/config</Config>
+
+  <Config Name="Plugin Folder" Target="/opt/zoraxy/plugin/" Default="/mnt/user/appdata/zoraxy/plugin" Mode="rw"
+    Description="Plugin-Daten inkl. automatisch erstellter config.yaml"
+    Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/plugin</Config>
+
+  <!-- CrowdSec Variablen -->
+  <Config Name="CrowdSec API Key" Target="CROWDSEC_API_KEY" Default="" Mode=""
+    Description="API Key von CrowdSec. Befehl: docker exec -it crowdsec cscli bouncers add zoraxy-bouncer"
+    Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="CrowdSec Agent URL" Target="CROWDSEC_AGENT_URL" Default="http://crowdsec:8080" Mode=""
+    Description="URL deiner CrowdSec Instanz. Beispiel: http://192.168.1.100:8080"
+    Type="Variable" Display="always" Required="true" Mask="false">http://crowdsec:8080</Config>
+
+  <Config Name="Log Level" Target="CROWDSEC_LOG_LEVEL" Default="warning" Mode=""
+    Description="Log-Level des Bouncers: trace / debug / info / warning / error"
+    Type="Variable" Display="advanced" Required="false" Mask="false">warning</Config>
+
+  <Config Name="Cloudflare Proxy" Target="CROWDSEC_CLOUDFLARE" Default="false" Mode=""
+    Description="Auf true setzen wenn Zoraxy hinter Cloudflare läuft"
+    Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+
+  <!-- Zoraxy Einstellungen -->
+  <Config Name="Fast GeoIP" Target="FASTGEOIP" Default="true" Mode=""
+    Description="Schnelle GeoIP-Datenbank aktivieren"
+    Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+
+  <Config Name="Docker Mode" Target="DOCKER" Default="true" Mode=""
+    Description="Docker-Kompatibilitätsmodus"
+    Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+
 </Container>

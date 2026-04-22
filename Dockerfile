@@ -10,9 +10,17 @@ RUN mkdir -p /opt/zoraxy/plugin/zoraxycrowdsecbouncer
 ADD https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer/releases/download/${PLUGIN_VERSION}/zoraxycrowdsecbouncer \
     /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
 
-# Download default config
-ADD https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer/releases/download/${PLUGIN_VERSION}/config.yaml \
-    /opt/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml
-
 # Make plugin executable
 RUN chmod +x /opt/zoraxy/plugin/zoraxycrowdsecbouncer/zoraxycrowdsecbouncer
+
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Umgebungsvariablen mit Standardwerten
+ENV CROWDSEC_API_KEY=""
+ENV CROWDSEC_AGENT_URL="http://crowdsec:8080"
+ENV CROWDSEC_LOG_LEVEL="warning"
+ENV CROWDSEC_CLOUDFLARE="false"
+
+ENTRYPOINT ["/entrypoint.sh"]
