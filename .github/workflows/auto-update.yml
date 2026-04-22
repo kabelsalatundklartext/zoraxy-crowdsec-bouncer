@@ -1,0 +1,52 @@
+name: Auto-Update Plugin Version
+
+on:
+  schedule:
+    # Jeden Montag um 06:00 Uhr prüfen
+    - cron: '0 6 * * 1'
+  workflow_dispatch: # auch manuell startbar
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: 📥 Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: 🔍 Aktuelle Plugin-Version aus Dockerfile lesen
+        id: current
+        run: |
+          CURRENT=$(grep 'ARG PLUGIN_VERSION=' Dockerfile | cut -d'=' -f2)
+          echo "version=$CURRENT" >> $GITHUB_OUTPUT
+          echo "Aktuelle Version: $CURRENT"
+
+      - name: 🌐 Neueste Plugin-Version von GitHub holen
+        id: latest
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer/releases/latest | jq -r '.tag_name')
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+          echo "Neueste Version: $LATEST"
+
+      - name: 🔄 Dockerfile aktualisieren wenn neue Version verfügbar
+        if: steps.current.outputs.version != steps.latest.outputs.version
+        run: |
+          echo "Update von ${{ steps.current.outputs.version }} auf ${{ steps.latest.outputs.version }}"
+          sed -i "s/ARG PLUGIN_VERSION=.*/ARG PLUGIN_VERSION=${{ steps.latest.outputs.version }}/" Dockerfile
+
+      - name: 💾 Änderung committen und pushen
+        if: steps.current.outputs.version != steps.latest.outputs.version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Dockerfile
+          git commit -m "⬆️ Plugin Update: ${{ steps.current.outputs.version }} → ${{ steps.latest.outputs.version }}"
+          git push
+
+      - name: ✅ Kein Update nötig
+        if: steps.current.outputs.version == steps.latest.outputs.version
+        run: |
+          echo "Plugin ist bereits auf dem neuesten Stand: ${{ steps.current.outputs.version }}"
