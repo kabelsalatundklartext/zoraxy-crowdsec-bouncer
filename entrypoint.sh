@@ -2,7 +2,6 @@
 
 PLUGIN_DEST="/opt/zoraxy/plugin/zoraxycrowdsecbouncer"
 PLUGIN_SRC="/opt/zoraxy/plugin_bundled/zoraxycrowdsecbouncer"
-CONFIG_FILE="$PLUGIN_DEST/config.yaml"
 
 echo "=== Zoraxy CrowdSec Bouncer Setup ==="
 
@@ -30,18 +29,22 @@ fi
 CROWDSEC_LOG_LEVEL="${CROWDSEC_LOG_LEVEL:-warning}"
 CROWDSEC_CLOUDFLARE="${CROWDSEC_CLOUDFLARE:-false}"
 
-# config.yaml erstellen/aktualisieren
-# Immer neu schreiben damit Variablen-Änderungen übernommen werden
-cat > "$CONFIG_FILE" <<YAML
-# CrowdSec Bouncer Konfiguration
+# config.yaml Inhalt
+CONFIG_CONTENT="# CrowdSec Bouncer Konfiguration
 # Wird bei jedem Start mit den Container-Variablen aktualisiert
 api_key: ${CROWDSEC_API_KEY}
 agent_url: ${CROWDSEC_AGENT_URL}
 log_level: ${CROWDSEC_LOG_LEVEL}
-is_proxied_behind_cloudflare: ${CROWDSEC_CLOUDFLARE}
-YAML
+is_proxied_behind_cloudflare: ${CROWDSEC_CLOUDFLARE}"
 
-echo "✅ config.yaml aktualisiert unter: $CONFIG_FILE"
+# config.yaml an alle möglichen Orte schreiben
+echo "$CONFIG_CONTENT" > "$PLUGIN_DEST/config.yaml"
+echo "$CONFIG_CONTENT" > "/opt/zoraxy/config.yaml"
+echo "$CONFIG_CONTENT" > "/opt/zoraxy/plugins/config.yaml" 2>/dev/null || true
+
+echo "✅ config.yaml geschrieben nach:"
+echo "   - $PLUGIN_DEST/config.yaml"
+echo "   - /opt/zoraxy/config.yaml"
 
 echo "=== Starte Zoraxy ==="
 exec zoraxy -docker=true -port=:8000
