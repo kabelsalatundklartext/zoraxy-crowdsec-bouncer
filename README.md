@@ -89,7 +89,7 @@ Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `confi
 1. Gehe in Unraid zu **Docker** → **Add Container**
 2. Scrolle ganz unten zu **Template URL** und füge ein:
    ```
-   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/unraid-template.xml
+   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/zoraxy-crowdsec-bouncer.xml
    ```
 3. Klicke **Load** – das Template wird automatisch befüllt
 
@@ -253,7 +253,7 @@ Enter these values directly in Unraid (or docker-compose) – the `config.yaml` 
 1. Go to Unraid **Docker** → **Add Container**
 2. Scroll to the bottom and find **Template URL**, paste:
    ```
-   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/unraid-template.xml
+   https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/zoraxy-crowdsec-bouncer.xml
    ```
 3. Click **Load** – the template fills in automatically
 
