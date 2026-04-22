@@ -1,12 +1,13 @@
 FROM zoraxydocker/zoraxy:latest
 
+# Versionen – werden automatisch durch auto-update.yml aktualisiert
+ARG ZORAXY_VERSION=latest
 ARG PLUGIN_VERSION=v1.2.1
 
 # Git installieren
 RUN apk add --no-cache git
 
-# Plugin ins Image an einen ANDEREN Ort klonen (nicht ins Volume!)
-# Beim Container-Start kopiert entrypoint.sh die Dateien ins Volume
+# Plugin ins Image klonen (nicht ins Volume – wird beim Start kopiert)
 RUN git clone --depth 1 --branch ${PLUGIN_VERSION} \
     https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer.git \
     /opt/zoraxy/plugin_bundled/zoraxycrowdsecbouncer
