@@ -1,0 +1,21 @@
+services:
+  zoraxy:
+    build: .
+    # oder direkt das fertige Image benutzen (nach dem Build auf Docker Hub):
+    # image: DEIN_DOCKERHUB_NAME/zoraxy-crowdsec-bouncer:latest
+    container_name: zoraxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+    volumes:
+      - ./config:/opt/zoraxy/config/
+      - ./plugin:/opt/zoraxy/plugin/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - FASTGEOIP=true
+      - DOCKER=true
