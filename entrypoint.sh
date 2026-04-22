@@ -9,18 +9,16 @@ echo "=== Zoraxy CrowdSec Bouncer Setup ==="
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "config.yaml nicht gefunden – wird automatisch erstellt..."
 
-  # Pflichtfelder prüfen
   if [ -z "$CROWDSEC_API_KEY" ]; then
-    echo "⚠️  WARNUNG: CROWDSEC_API_KEY ist nicht gesetzt! Bitte in den Container-Einstellungen eintragen."
+    echo "⚠️  WARNUNG: CROWDSEC_API_KEY ist nicht gesetzt!"
     CROWDSEC_API_KEY="BITTE_API_KEY_EINTRAGEN"
   fi
 
   if [ -z "$CROWDSEC_AGENT_URL" ]; then
-    echo "⚠️  WARNUNG: CROWDSEC_AGENT_URL ist nicht gesetzt! Standard wird verwendet."
+    echo "⚠️  WARNUNG: CROWDSEC_AGENT_URL ist nicht gesetzt!"
     CROWDSEC_AGENT_URL="http://crowdsec:8080"
   fi
 
-  # Standardwerte für optionale Variablen
   CROWDSEC_LOG_LEVEL="${CROWDSEC_LOG_LEVEL:-warning}"
   CROWDSEC_CLOUDFLARE="${CROWDSEC_CLOUDFLARE:-false}"
 
@@ -29,8 +27,6 @@ if [ ! -f "$CONFIG_FILE" ]; then
   cat > "$CONFIG_FILE" <<EOF
 # CrowdSec Bouncer Konfiguration
 # Automatisch erstellt beim ersten Start
-# Du kannst diese Datei jederzeit manuell bearbeiten.
-
 api_key: ${CROWDSEC_API_KEY}
 agent_url: ${CROWDSEC_AGENT_URL}
 log_level: ${CROWDSEC_LOG_LEVEL}
@@ -44,7 +40,15 @@ fi
 
 echo "=== Starte Zoraxy ==="
 
-# Originalen Zoraxy-Startbefehl ausführen
-exec /zoraxy/zoraxy \
-  -docker=true \
-  -port=:8000
+# Zoraxy Binary suchen und starten
+if [ -f "/opt/zoraxy/zoraxy" ]; then
+  exec /opt/zoraxy/zoraxy -docker=true -port=:8000
+elif [ -f "/zoraxy" ]; then
+  exec /zoraxy -docker=true -port=:8000
+elif [ -f "/app/zoraxy" ]; then
+  exec /app/zoraxy -docker=true -port=:8000
+else
+  # Fallback: originalen Entrypoint des Basis-Images nutzen
+  echo "Zoraxy Binary nicht direkt gefunden – starte über originalen Entrypoint..."
+  exec zoraxy -docker=true -port=:8000
+fi
