@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>zoraxy-crowdsec-bouncer</Name>
+  <n>zoraxy-crowdsec-bouncer</n>
   <Repository>ghcr.io/kabelsalatundklartext/zoraxy-crowdsec-bouncer:latest</Repository>
   <Registry>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/pkgs/container/zoraxy-crowdsec-bouncer</Registry>
   <Network>bridge</Network>
@@ -28,17 +28,17 @@
     <Mode>bridge</Mode>
     <Publish>
       <Port>
-        <HostPort>80</HostPort>
+        <HostPort></HostPort>
         <ContainerPort>80</ContainerPort>
         <Protocol>tcp</Protocol>
       </Port>
       <Port>
-        <HostPort>443</HostPort>
+        <HostPort></HostPort>
         <ContainerPort>443</ContainerPort>
         <Protocol>tcp</Protocol>
       </Port>
       <Port>
-        <HostPort>8000</HostPort>
+        <HostPort></HostPort>
         <ContainerPort>8000</ContainerPort>
         <Protocol>tcp</Protocol>
       </Port>
@@ -47,12 +47,12 @@
 
   <Data>
     <Volume>
-      <HostDir>/mnt/user/appdata/zoraxy/config</HostDir>
+      <HostDir></HostDir>
       <ContainerDir>/opt/zoraxy/config/</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
     <Volume>
-      <HostDir>/mnt/user/appdata/zoraxy/plugin</HostDir>
+      <HostDir></HostDir>
       <ContainerDir>/opt/zoraxy/plugin/</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
@@ -71,32 +71,32 @@
   <Environment>
     <Variable>
       <Value></Value>
-      <Name>CROWDSEC_API_KEY</Name>
+      <n>CROWDSEC_API_KEY</n>
       <Mode/>
     </Variable>
     <Variable>
-      <Value>http://crowdsec:8080</Value>
-      <Name>CROWDSEC_AGENT_URL</Name>
+      <Value></Value>
+      <n>CROWDSEC_AGENT_URL</n>
       <Mode/>
     </Variable>
     <Variable>
       <Value>warning</Value>
-      <Name>CROWDSEC_LOG_LEVEL</Name>
+      <n>CROWDSEC_LOG_LEVEL</n>
       <Mode/>
     </Variable>
     <Variable>
       <Value>false</Value>
-      <Name>CROWDSEC_CLOUDFLARE</Name>
+      <n>CROWDSEC_CLOUDFLARE</n>
       <Mode/>
     </Variable>
     <Variable>
       <Value>true</Value>
-      <Name>FASTGEOIP</Name>
+      <n>FASTGEOIP</n>
       <Mode/>
     </Variable>
     <Variable>
       <Value>true</Value>
-      <Name>DOCKER</Name>
+      <n>DOCKER</n>
       <Mode/>
     </Variable>
   </Environment>
@@ -104,33 +104,33 @@
   <!-- Ports -->
   <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp"
     Description="Zoraxy Management WebUI"
-    Type="Port" Display="always" Required="true" Mask="false">8000</Config>
+    Type="Port" Display="always" Required="true" Mask="false"></Config>
 
   <Config Name="HTTP Port" Target="80" Default="80" Mode="tcp"
     Description="HTTP traffic"
-    Type="Port" Display="always" Required="true" Mask="false">80</Config>
+    Type="Port" Display="always" Required="true" Mask="false"></Config>
 
   <Config Name="HTTPS Port" Target="443" Default="443" Mode="tcp"
     Description="HTTPS traffic"
-    Type="Port" Display="always" Required="true" Mask="false">443</Config>
+    Type="Port" Display="always" Required="true" Mask="false"></Config>
 
   <!-- Pfade -->
-  <Config Name="Config Folder" Target="/opt/zoraxy/config/" Default="/mnt/user/appdata/zoraxy/config" Mode="rw"
+  <Config Name="Config Folder" Target="/opt/zoraxy/config/" Default="" Mode="rw"
     Description="Zoraxy Konfiguration, Zertifikate und Logs"
-    Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/config</Config>
+    Type="Path" Display="always" Required="true" Mask="false"></Config>
 
-  <Config Name="Plugin Folder" Target="/opt/zoraxy/plugin/" Default="/mnt/user/appdata/zoraxy/plugin" Mode="rw"
+  <Config Name="Plugin Folder" Target="/opt/zoraxy/plugin/" Default="" Mode="rw"
     Description="Plugin-Daten inkl. automatisch erstellter config.yaml"
-    Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zoraxy/plugin</Config>
+    Type="Path" Display="always" Required="true" Mask="false"></Config>
 
   <!-- CrowdSec Variablen -->
   <Config Name="CrowdSec API Key" Target="CROWDSEC_API_KEY" Default="" Mode=""
     Description="API Key von CrowdSec. Befehl: docker exec -it crowdsec cscli bouncers add zoraxy-bouncer"
     Type="Variable" Display="always" Required="true" Mask="true"></Config>
 
-  <Config Name="CrowdSec Agent URL" Target="CROWDSEC_AGENT_URL" Default="http://crowdsec:8080" Mode=""
+  <Config Name="CrowdSec Agent URL" Target="CROWDSEC_AGENT_URL" Default="" Mode=""
     Description="URL deiner CrowdSec Instanz. Beispiel: http://192.168.1.100:8080"
-    Type="Variable" Display="always" Required="true" Mask="false">http://crowdsec:8080</Config>
+    Type="Variable" Display="always" Required="true" Mask="false"></Config>
 
   <Config Name="Log Level" Target="CROWDSEC_LOG_LEVEL" Default="warning" Mode=""
     Description="Log-Level des Bouncers: trace / debug / info / warning / error"
