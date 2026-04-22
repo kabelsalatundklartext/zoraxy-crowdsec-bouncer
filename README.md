@@ -22,7 +22,9 @@
 
 Dieses Docker-Image kombiniert [Zoraxy](https://github.com/tobychui/zoraxy) – einen modernen HTTP Reverse Proxy – mit dem [CrowdSec Bouncer Plugin](https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer), welches bösartige IPs automatisch blockiert.
 
-Das Plugin ist bereits **vorinstalliert** – du musst nichts manuell herunterladen oder konfigurieren.
+**Das Plugin ist bereits vorinstalliert** – du musst nichts manuell herunterladen.
+
+**Die `config.yaml` wird beim ersten Start automatisch erstellt** – du trägst einfach deinen CrowdSec API Key und die URL direkt in den Unraid Container-Einstellungen ein, ganz ohne die Datei manuell bearbeiten zu müssen.
 
 **CrowdSec selbst ist nicht enthalten** – du benötigst eine separate CrowdSec-Instanz (z.B. als eigener Docker-Container).
 
@@ -32,6 +34,23 @@ Das Plugin ist bereits **vorinstalliert** – du musst nichts manuell herunterla
 |---|---|
 | Zoraxy | latest |
 | CrowdSec Bouncer Plugin | v1.2.1 |
+
+---
+
+## Umgebungsvariablen
+
+Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `config.yaml` wird beim ersten Start automatisch daraus erstellt.
+
+| Variable | Standard | Pflicht? | Beschreibung |
+|---|---|---|---|
+| `CROWDSEC_API_KEY` | *(leer)* | ✅ Ja | API Key deiner CrowdSec-Instanz |
+| `CROWDSEC_AGENT_URL` | `http://crowdsec:8080` | ✅ Ja | URL deiner CrowdSec-Instanz |
+| `CROWDSEC_LOG_LEVEL` | `warning` | ❌ Nein | Log-Level: `trace` / `debug` / `info` / `warning` / `error` |
+| `CROWDSEC_CLOUDFLARE` | `false` | ❌ Nein | `true` wenn Zoraxy hinter Cloudflare läuft |
+| `FASTGEOIP` | `true` | ❌ Nein | Schnelle GeoIP-Datenbank |
+| `DOCKER` | `true` | ❌ Nein | Docker-Kompatibilitätsmodus |
+
+> 💡 Die `config.yaml` wird **nur beim ersten Start** erstellt. Wenn die Datei bereits existiert, wird sie **nicht überschrieben** – du kannst sie also auch manuell bearbeiten.
 
 ---
 
@@ -50,18 +69,9 @@ Das Plugin ist bereits **vorinstalliert** – du musst nichts manuell herunterla
 | Container-Pfad | Beschreibung | Unraid Standard-Pfad |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy Konfiguration, Zertifikate, Logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugin/` | Plugin-Daten inkl. CrowdSec Bouncer Config | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugin/` | Plugin-Daten inkl. automatisch erstellter `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker-Socket (für Docker-Modus) | `/var/run/docker.sock` |
 | `/etc/localtime` | Zeitzone vom Host | `/etc/localtime` |
-
----
-
-## Umgebungsvariablen
-
-| Variable | Standard | Beschreibung |
-|---|---|---|
-| `FASTGEOIP` | `true` | Schnelle GeoIP-Datenbank aktivieren |
-| `DOCKER` | `true` | Docker-Kompatibilitätsmodus |
 
 ---
 
@@ -87,8 +97,29 @@ Das Plugin ist bereits **vorinstalliert** – du musst nichts manuell herunterla
 
 ## Unraid Einstellungen
 
+### Pflichtfelder (immer sichtbar)
+
+| Feld | Beispiel | Beschreibung |
+|------|---------|-------------|
+| **CrowdSec API Key** | `abc123xyz...` | Wird beim Eintippen versteckt (masked) |
+| **CrowdSec Agent URL** | `http://192.168.1.100:8080` | IP deines CrowdSec Containers |
+| **WebUI Port** | `8000` | Zoraxy Verwaltungsoberfläche |
+| **HTTP Port** | `80` | HTTP-Traffic |
+| **HTTPS Port** | `443` | HTTPS-Traffic |
+| **Config Folder** | `/mnt/user/appdata/zoraxy/config` | Zoraxy Konfigurationsdaten |
+| **Plugin Folder** | `/mnt/user/appdata/zoraxy/plugin` | Plugin inkl. `config.yaml` |
+
+### Erweiterte Felder (unter "Advanced")
+
+| Feld | Standard | Beschreibung |
+|------|---------|-------------|
+| Log Level | `warning` | Wie viel der Bouncer loggt |
+| Cloudflare Proxy | `false` | `true` wenn du Cloudflare nutzt |
+| Fast GeoIP | `true` | GeoIP-Datenbank |
+| Docker Mode | `true` | Docker-Kompatibilität |
+
 ### Ports anpassen
-Falls Port 80 oder 443 bereits belegt sind, kannst du die Host-Ports ändern:
+Falls Port 80 oder 443 bereits belegt sind:
 
 | Feld | Standard | Beispiel geändert | Hinweis |
 |------|---------|-------------------|---------|
@@ -99,11 +130,9 @@ Falls Port 80 oder 443 bereits belegt sind, kannst du die Host-Ports ändern:
 > ⚠️ Ändere **nur** den linken Wert (Host-Port), nicht den rechten (Container-Port)!
 
 ### Pfade anpassen
-Standardmäßig landen alle Daten unter `/mnt/user/appdata/zoraxy/`.
-Falls du einen anderen Speicherort möchtest:
 
-| Feld | Standard | Beispiel Alternative |
-|------|---------|---------------------|
+| Feld | Standard | Alternative (SSD/Cache) |
+|------|---------|------------------------|
 | Config Pfad | `/mnt/user/appdata/zoraxy/config` | `/mnt/cache/appdata/zoraxy/config` |
 | Plugin Pfad | `/mnt/user/appdata/zoraxy/plugin` | `/mnt/cache/appdata/zoraxy/plugin` |
 
@@ -111,42 +140,24 @@ Falls du einen anderen Speicherort möchtest:
 
 ---
 
-## CrowdSec Bouncer einrichten
+## CrowdSec API Key holen
 
-### Schritt 1 – API-Key von CrowdSec holen
 Führe diesen Befehl in deinem CrowdSec-Container aus:
 ```bash
 docker exec -it crowdsec cscli bouncers add zoraxy-bouncer
 ```
-Den angezeigten API-Key kopieren und aufbewahren.
+Den angezeigten Key kopieren und in das Feld **CrowdSec API Key** in Unraid eintragen.
 
-### Schritt 2 – Config-Datei bearbeiten
-Öffne die Datei auf deinem Unraid-Server:
-```
-/mnt/user/appdata/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml
-```
+---
 
-Inhalt anpassen:
-```yaml
-api_key: DEIN_API_KEY_HIER
-agent_url: http://IP-DEINES-CROWDSEC-CONTAINERS:8080
-log_level: warning
-is_proxied_behind_cloudflare: false  # auf true setzen wenn du Cloudflare nutzt
-```
+## Plugin in Zoraxy aktivieren
 
-### Schritt 3 – Plugin in Zoraxy aktivieren
+Nach dem ersten Start:
+
 1. Öffne die Zoraxy WebUI: `http://DEINE-UNRAID-IP:8000`
-2. Gehe zu **Plugins**
-3. Das CrowdSec Bouncer Plugin sollte dort erscheinen → **Aktivieren**
-4. Gehe zu **Tags** → Erstelle einen neuen Tag (z.B. `crowdsec-protected`)
-5. Füge den Tag bei allen Proxy-Regeln hinzu, die du schützen möchtest
-
-### Schritt 4 – Testen
-Prüfe ob der Bouncer läuft:
-```bash
-docker exec -it zoraxy ls /opt/zoraxy/plugin/zoraxycrowdsecbouncer/
-```
-Du solltest `zoraxycrowdsecbouncer` und `config.yaml` sehen.
+2. Gehe zu **Plugins** – der CrowdSec Bouncer sollte erscheinen → **Aktivieren**
+3. Gehe zu **Tags** → Neuen Tag erstellen (z.B. `crowdsec-protected`)
+4. Tag bei allen Proxy-Regeln hinzufügen, die du schützen möchtest
 
 ---
 
@@ -156,9 +167,13 @@ Du solltest `zoraxycrowdsecbouncer` und `config.yaml` sehen.
 → Prüfe ob der Plugin-Pfad korrekt gemountet ist
 → Starte den Container neu
 
+**`config.yaml` hat falschen API Key**
+→ Datei löschen unter `/mnt/user/appdata/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml`
+→ Container neu starten – sie wird neu erstellt mit den aktuellen Variablen
+
 **CrowdSec API nicht erreichbar**
 → Stelle sicher dass Zoraxy und CrowdSec im selben Docker-Netzwerk sind
-→ Alternativ `host.docker.internal` als URL verwenden
+→ Alternativ die direkte IP verwenden: `http://192.168.1.xxx:8080`
 
 **Port bereits belegt**
 → Ändere den Host-Port in den Unraid Container-Einstellungen (nur den linken Wert!)
@@ -171,7 +186,9 @@ Du solltest `zoraxycrowdsecbouncer` und `config.yaml` sehen.
 
 This Docker image combines [Zoraxy](https://github.com/tobychui/zoraxy) – a modern HTTP reverse proxy – with the [CrowdSec Bouncer Plugin](https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer), which automatically blocks malicious IPs.
 
-The plugin is **pre-installed** – no manual download or setup required.
+**The plugin is pre-installed** – no manual download required.
+
+**The `config.yaml` is created automatically on first start** – simply enter your CrowdSec API key and URL directly in the Unraid container settings, no need to edit files manually.
 
 **CrowdSec itself is not included** – you need a separate CrowdSec instance (e.g. as its own Docker container).
 
@@ -181,6 +198,23 @@ The plugin is **pre-installed** – no manual download or setup required.
 |---|---|
 | Zoraxy | latest |
 | CrowdSec Bouncer Plugin | v1.2.1 |
+
+---
+
+## Environment Variables
+
+Enter these values directly in Unraid (or docker-compose) – the `config.yaml` is created automatically on first start.
+
+| Variable | Default | Required? | Description |
+|---|---|---|---|
+| `CROWDSEC_API_KEY` | *(empty)* | ✅ Yes | API key of your CrowdSec instance |
+| `CROWDSEC_AGENT_URL` | `http://crowdsec:8080` | ✅ Yes | URL of your CrowdSec instance |
+| `CROWDSEC_LOG_LEVEL` | `warning` | ❌ No | Log level: `trace` / `debug` / `info` / `warning` / `error` |
+| `CROWDSEC_CLOUDFLARE` | `false` | ❌ No | `true` if Zoraxy runs behind Cloudflare |
+| `FASTGEOIP` | `true` | ❌ No | Enable fast GeoIP database |
+| `DOCKER` | `true` | ❌ No | Docker compatibility mode |
+
+> 💡 The `config.yaml` is only created on **first start**. If the file already exists, it will **not be overwritten** – you can also edit it manually.
 
 ---
 
@@ -199,18 +233,9 @@ The plugin is **pre-installed** – no manual download or setup required.
 | Container Path | Description | Unraid Default Path |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy config, certificates, logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugin/` | Plugin data incl. CrowdSec bouncer config | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugin/` | Plugin data incl. auto-created `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker socket (for Docker mode) | `/var/run/docker.sock` |
 | `/etc/localtime` | Timezone from host | `/etc/localtime` |
-
----
-
-## Environment Variables
-
-| Variable | Default | Description |
-|---|---|---|
-| `FASTGEOIP` | `true` | Enable fast GeoIP database |
-| `DOCKER` | `true` | Docker compatibility mode |
 
 ---
 
@@ -236,8 +261,29 @@ The plugin is **pre-installed** – no manual download or setup required.
 
 ## Unraid Settings
 
+### Required fields (always visible)
+
+| Field | Example | Description |
+|-------|---------|-------------|
+| **CrowdSec API Key** | `abc123xyz...` | Hidden when typing (masked) |
+| **CrowdSec Agent URL** | `http://192.168.1.100:8080` | IP of your CrowdSec container |
+| **WebUI Port** | `8000` | Zoraxy management interface |
+| **HTTP Port** | `80` | HTTP traffic |
+| **HTTPS Port** | `443` | HTTPS traffic |
+| **Config Folder** | `/mnt/user/appdata/zoraxy/config` | Zoraxy configuration data |
+| **Plugin Folder** | `/mnt/user/appdata/zoraxy/plugin` | Plugin incl. `config.yaml` |
+
+### Advanced fields (under "Advanced")
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Log Level | `warning` | How much the bouncer logs |
+| Cloudflare Proxy | `false` | `true` if you use Cloudflare |
+| Fast GeoIP | `true` | GeoIP database |
+| Docker Mode | `true` | Docker compatibility |
+
 ### Changing Ports
-If port 80 or 443 are already in use, you can change the host ports:
+If port 80 or 443 are already in use:
 
 | Field | Default | Example Changed | Note |
 |-------|---------|-----------------|------|
@@ -248,10 +294,9 @@ If port 80 or 443 are already in use, you can change the host ports:
 > ⚠️ Only change the **left** value (host port), not the right one (container port)!
 
 ### Changing Paths
-By default all data is stored under `/mnt/user/appdata/zoraxy/`.
 
-| Field | Default | Alternative Example |
-|-------|---------|---------------------|
+| Field | Default | Alternative (SSD/Cache) |
+|-------|---------|------------------------|
 | Config Path | `/mnt/user/appdata/zoraxy/config` | `/mnt/cache/appdata/zoraxy/config` |
 | Plugin Path | `/mnt/user/appdata/zoraxy/plugin` | `/mnt/cache/appdata/zoraxy/plugin` |
 
@@ -259,42 +304,24 @@ By default all data is stored under `/mnt/user/appdata/zoraxy/`.
 
 ---
 
-## Setting up the CrowdSec Bouncer
+## Getting the CrowdSec API Key
 
-### Step 1 – Get API key from CrowdSec
 Run this command in your CrowdSec container:
 ```bash
 docker exec -it crowdsec cscli bouncers add zoraxy-bouncer
 ```
-Copy and save the displayed API key.
+Copy the displayed key and paste it into the **CrowdSec API Key** field in Unraid.
 
-### Step 2 – Edit the config file
-Open the file on your Unraid server:
-```
-/mnt/user/appdata/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml
-```
+---
 
-Edit the content:
-```yaml
-api_key: YOUR_API_KEY_HERE
-agent_url: http://IP-OF-YOUR-CROWDSEC-CONTAINER:8080
-log_level: warning
-is_proxied_behind_cloudflare: false  # set to true if you use Cloudflare
-```
+## Activating the Plugin in Zoraxy
 
-### Step 3 – Activate plugin in Zoraxy
+After the first start:
+
 1. Open Zoraxy WebUI: `http://YOUR-UNRAID-IP:8000`
-2. Go to **Plugins**
-3. The CrowdSec Bouncer Plugin should appear → **Activate**
-4. Go to **Tags** → Create a new tag (e.g. `crowdsec-protected`)
-5. Add the tag to all proxy rules you want to protect
-
-### Step 4 – Verify
-Check if the bouncer is running:
-```bash
-docker exec -it zoraxy ls /opt/zoraxy/plugin/zoraxycrowdsecbouncer/
-```
-You should see `zoraxycrowdsecbouncer` and `config.yaml`.
+2. Go to **Plugins** – the CrowdSec Bouncer should appear → **Activate**
+3. Go to **Tags** → Create a new tag (e.g. `crowdsec-protected`)
+4. Add the tag to all proxy rules you want to protect
 
 ---
 
@@ -304,9 +331,13 @@ You should see `zoraxycrowdsecbouncer` and `config.yaml`.
 → Check if the plugin path is correctly mounted
 → Restart the container
 
+**`config.yaml` has wrong API key**
+→ Delete the file at `/mnt/user/appdata/zoraxy/plugin/zoraxycrowdsecbouncer/config.yaml`
+→ Restart the container – it will be recreated with the current variables
+
 **CrowdSec API not reachable**
 → Make sure Zoraxy and CrowdSec are in the same Docker network
-→ Alternatively use `host.docker.internal` as the URL
+→ Alternatively use the direct IP: `http://192.168.1.xxx:8080`
 
 **Port already in use**
 → Change the host port in the Unraid container settings (left value only!)
@@ -333,6 +364,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
+      - CROWDSEC_API_KEY=DEIN_API_KEY
+      - CROWDSEC_AGENT_URL=http://crowdsec:8080
+      - CROWDSEC_LOG_LEVEL=warning
+      - CROWDSEC_CLOUDFLARE=false
       - FASTGEOIP=true
       - DOCKER=true
 ```
