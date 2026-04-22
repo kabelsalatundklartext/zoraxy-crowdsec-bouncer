@@ -6,7 +6,7 @@ CONFIG_FILE="$PLUGIN_DEST/config.yaml"
 
 echo "=== Zoraxy CrowdSec Bouncer Setup ==="
 
-# Plugin-Dateien aus dem Image ins Volume kopieren (nur wenn Binary fehlt)
+# Plugin-Dateien ins Volume kopieren wenn Binary fehlt
 if [ ! -f "$PLUGIN_DEST/zoraxycrowdsecbouncer" ]; then
   echo "Plugin nicht im Volume gefunden – kopiere aus Image..."
   mkdir -p "$PLUGIN_DEST"
@@ -17,36 +17,31 @@ else
   echo "✅ Plugin bereits im Volume vorhanden."
 fi
 
-# config.yaml erstellen wenn sie nicht existiert
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "config.yaml nicht gefunden – wird automatisch erstellt..."
+# Variablen setzen
+if [ -z "$CROWDSEC_API_KEY" ]; then
+  echo "⚠️  WARNUNG: CROWDSEC_API_KEY ist nicht gesetzt!"
+  CROWDSEC_API_KEY="BITTE_API_KEY_EINTRAGEN"
+fi
 
-  if [ -z "$CROWDSEC_API_KEY" ]; then
-    echo "⚠️  WARNUNG: CROWDSEC_API_KEY ist nicht gesetzt!"
-    CROWDSEC_API_KEY="BITTE_API_KEY_EINTRAGEN"
-  fi
+if [ -z "$CROWDSEC_AGENT_URL" ]; then
+  CROWDSEC_AGENT_URL="http://crowdsec:8080"
+fi
 
-  if [ -z "$CROWDSEC_AGENT_URL" ]; then
-    echo "⚠️  WARNUNG: CROWDSEC_AGENT_URL ist nicht gesetzt!"
-    CROWDSEC_AGENT_URL="http://crowdsec:8080"
-  fi
+CROWDSEC_LOG_LEVEL="${CROWDSEC_LOG_LEVEL:-warning}"
+CROWDSEC_CLOUDFLARE="${CROWDSEC_CLOUDFLARE:-false}"
 
-  CROWDSEC_LOG_LEVEL="${CROWDSEC_LOG_LEVEL:-warning}"
-  CROWDSEC_CLOUDFLARE="${CROWDSEC_CLOUDFLARE:-false}"
-
-  cat > "$CONFIG_FILE" <<YAML
+# config.yaml erstellen/aktualisieren
+# Immer neu schreiben damit Variablen-Änderungen übernommen werden
+cat > "$CONFIG_FILE" <<YAML
 # CrowdSec Bouncer Konfiguration
-# Automatisch erstellt beim ersten Start
+# Wird bei jedem Start mit den Container-Variablen aktualisiert
 api_key: ${CROWDSEC_API_KEY}
 agent_url: ${CROWDSEC_AGENT_URL}
 log_level: ${CROWDSEC_LOG_LEVEL}
 is_proxied_behind_cloudflare: ${CROWDSEC_CLOUDFLARE}
 YAML
 
-  echo "✅ config.yaml erstellt unter: $CONFIG_FILE"
-else
-  echo "✅ config.yaml bereits vorhanden – wird nicht überschrieben."
-fi
+echo "✅ config.yaml aktualisiert unter: $CONFIG_FILE"
 
 echo "=== Starte Zoraxy ==="
 exec zoraxy -docker=true -port=:8000
