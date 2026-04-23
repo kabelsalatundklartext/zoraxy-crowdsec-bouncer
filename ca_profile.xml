@@ -1,13 +1,13 @@
-<?xml version="1.0"?>
-<Profiles>
+<?xml version="1.0" encoding="utf-8"?>
+<Maintainer>
+  <Icon>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/Zoraxy-Crowdsec.png</Icon>
   <Profile>
-    <Name>zoraxy-crowdsec-bouncer</Name>
-    <Overview>Zoraxy reverse proxy with the CrowdSec Bouncer plugin pre-installed. Automatically blocks malicious IPs using your CrowdSec instance. The config.yaml is created automatically on first start using the environment variables.</Overview>
-    <Category>Network:Proxy</Category>
-    <Support>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/issues</Support>
-    <Icon>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/Zoraxy-Crowdsec.png</Icon>
-    <Maintainer>
-      <WebPage>https://github.com/kabelsalatundklartext</WebPage>
-    </Maintainer>
+    Homelab-Enthusiast aus Deutschland. Ich baue Tools für Unraid und Self-Hosting,
+    die ich selbst täglich nutze — praktisch, quelloffen und ohne Schnickschnack.
+    Zoraxy CrowdSec Bouncer kombiniert den Zoraxy Reverse Proxy mit dem CrowdSec Bouncer Plugin
+    für automatischen Schutz vor bösartigen IPs.
   </Profile>
-</Profiles>
+  <WebPage>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</WebPage>
+  <DonateText>Wenn dir das Projekt gefällt, gib gerne einen Stern auf GitHub!</DonateText>
+  <DonateLink>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</DonateLink>
+</Maintainer>
