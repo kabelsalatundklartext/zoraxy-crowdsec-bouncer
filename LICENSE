@@ -1,10 +1,6 @@
 MIT License
 
-This Docker image / template bundles the following third-party software:
-
-zoraxy_crowdsec_bouncer
-Copyright (c) 2025 Anthony Rubick
-https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer
+Copyright (c) 2025 kabelsalatundklartext
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,5 +22,14 @@ SOFTWARE.
 
 ---
 
-Zoraxy is licensed under AGPL v3 by tobychui.
-See: https://github.com/tobychui/zoraxy/blob/main/LICENSE
+This project bundles the following third-party software:
+
+zoraxy_crowdsec_bouncer
+Copyright (c) 2025 Anthony Rubick
+Licensed under MIT License
+https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer
+
+Zoraxy
+Copyright (c) tobychui
+Licensed under AGPL v3
+https://github.com/tobychui/zoraxy
