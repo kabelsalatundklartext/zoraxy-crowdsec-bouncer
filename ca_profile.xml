@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<Profiles>
+  <Profile>
+    <Name>zoraxy-crowdsec-bouncer</Name>
+    <Description>
+      Zoraxy reverse proxy with the CrowdSec Bouncer plugin pre-installed.
+      Automatically blocks malicious IPs using your CrowdSec instance.
+      The config.yaml is created automatically on first start using the environment variables.
+
+      Credits:
+      - Zoraxy by tobychui (AGPL v3): https://github.com/tobychui/zoraxy
+      - zoraxy_crowdsec_bouncer by AnthonyMichaelTDM (MIT): https://github.com/AnthonyMichaelTDM/zoraxy_crowdsec_bouncer
+    </Description>
+    <Support>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</Support>
+    <Project>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</Project>
+    <Icon>https://raw.githubusercontent.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer/main/icon.png</Icon>
+  </Profile>
+</Profiles>
