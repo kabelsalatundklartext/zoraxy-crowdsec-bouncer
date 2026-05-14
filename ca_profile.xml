@@ -12,6 +12,7 @@
     CrowdSec LAPI instance; see the GitHub README for variables, volumes, and Unraid notes.
   </Profile>
   <WebPage>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</WebPage>
+  <Forum>https://forums.unraid.net/topic/198802-support-zoraxy-crowdsec-bouncer-unraid-docker/</Forum>
   <DonateText>EN: Like the project? Star us on GitHub! — DE: Gefällt dir das Projekt? Stern auf GitHub!</DonateText>
   <DonateLink>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</DonateLink>
 </Maintainer>
