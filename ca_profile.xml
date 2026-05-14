@@ -6,6 +6,10 @@
     die ich selbst täglich nutze — praktisch, quelloffen und ohne Schnickschnack.
     Zoraxy CrowdSec Bouncer kombiniert den Zoraxy Reverse Proxy mit dem CrowdSec Bouncer Plugin
     für automatischen Schutz vor bösartigen IPs.
+
+    English: This repository packages a Docker image that bundles Zoraxy (reverse proxy) with the
+    CrowdSec bouncer plugin pre-installed. CrowdSec itself is not included — you need your own
+    CrowdSec LAPI instance; see the GitHub README for variables, volumes, and Unraid notes.
   </Profile>
   <WebPage>https://github.com/kabelsalatundklartext/zoraxy-crowdsec-bouncer</WebPage>
   <DonateText>Wenn dir das Projekt gefällt, gib gerne einen Stern auf GitHub!</DonateText>
