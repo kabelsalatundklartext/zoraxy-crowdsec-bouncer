@@ -99,10 +99,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Dockerfile
-          git commit -m "$(cat <<EOF
-⬆️ Auto-update: Zoraxy ${{ steps.current.outputs.zoraxy }} → ${{ steps.needs_update.outputs.zoraxy }}, Plugin ${{ steps.current.outputs.plugin }} → ${{ steps.needs_update.outputs.plugin }}
-EOF
-)"
+          git commit -m "Auto-update: Zoraxy ${{ steps.current.outputs.zoraxy }} -> ${{ steps.needs_update.outputs.zoraxy }}, Plugin ${{ steps.current.outputs.plugin }} -> ${{ steps.needs_update.outputs.plugin }}"
           git push
 
       - name: Kein Update nötig
