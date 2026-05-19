@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
 
     steps:
       - name: Repository auschecken
@@ -101,6 +102,14 @@ jobs:
           git add Dockerfile
           git commit -m "Auto-update: Zoraxy ${{ steps.current.outputs.zoraxy }} -> ${{ steps.needs_update.outputs.zoraxy }}, Plugin ${{ steps.current.outputs.plugin }} -> ${{ steps.needs_update.outputs.plugin }}"
           git push
+
+      - name: Docker-Build starten
+        if: steps.needs_update.outputs.update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run docker-build.yml --repo "${{ github.repository }}"
+          echo "Build and Push Docker Image wurde gestartet."
 
       - name: Kein Update nötig
         if: steps.needs_update.outputs.update != 'true'
