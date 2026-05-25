@@ -11,7 +11,9 @@
 ## Inhaltsverzeichnis / Table of Contents
 
 - [🇩🇪 Deutsch](#-deutsch)
+  - [CrowdSec auf Unraid einrichten](#crowdsec-auf-unraid-einrichten-voraussetzung)
 - [🇬🇧 English](#-english)
+  - [Set up CrowdSec on Unraid](#set-up-crowdsec-on-unraid-prerequisite)
 - [Credits & Lizenzen](#credits--lizenzen--licenses)
 
 ---
@@ -24,7 +26,7 @@ Dieses Docker-Image kombiniert [Zoraxy](https://github.com/tobychui/zoraxy) – 
 
 **Das Plugin ist bereits vorinstalliert** – du musst nichts manuell herunterladen.
 
-**Die `config.yaml` wird beim ersten Start automatisch erstellt** – du trägst einfach deinen CrowdSec API Key und die URL direkt in den Unraid Container-Einstellungen ein, ganz ohne die Datei manuell bearbeiten zu müssen.
+**Die Plugin-`config.yaml` wird beim Container-Start aus den Umgebungsvariablen erzeugt** – du trägst API Key und LAPI-URL in den Unraid-Einstellungen ein, ohne die Datei manuell zu bearbeiten.
 
 **CrowdSec selbst ist nicht enthalten** – du benötigst eine separate CrowdSec-Instanz (z.B. als eigener Docker-Container).
 
@@ -50,7 +52,7 @@ Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `confi
 | `FASTGEOIP` | `true` | ❌ Nein | Schnelle GeoIP-Datenbank |
 | `DOCKER` | `true` | ❌ Nein | Docker-Kompatibilitätsmodus |
 
-> 💡 Die `config.yaml` wird **nur beim ersten Start** erstellt. Wenn die Datei bereits existiert, wird sie **nicht überschrieben** – du kannst sie also auch manuell bearbeiten.
+> 💡 Die Plugin-`config.yaml` wird **bei jedem Start** aus den Container-Variablen geschrieben. Manuelle Änderungen an der Datei werden beim nächsten Neustart überschrieben – Werte also lieber in Unraid unter den Umgebungsvariablen pflegen.
 
 ---
 
@@ -69,7 +71,7 @@ Diese Werte trägst du direkt in Unraid (oder docker-compose) ein – die `confi
 | Container-Pfad | Beschreibung | Unraid Standard-Pfad |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy Konfiguration, Zertifikate, Logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugins/` | Plugin-Daten inkl. automatisch erstellter `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugin/` | Plugin-Daten inkl. automatisch erstellter `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker-Socket (für Docker-Modus) | `/var/run/docker.sock` |
 | `/etc/localtime` | Zeitzone vom Host | `/etc/localtime` |
 
@@ -140,6 +142,134 @@ Falls Port 80 oder 443 bereits belegt sind:
 
 ---
 
+## CrowdSec auf Unraid einrichten (Voraussetzung)
+
+Dieses Image enthält **nur den Bouncer in Zoraxy** – CrowdSec selbst installierst du separat. Ohne CrowdSec erkennt das System keine neuen Angreifer; der Bouncer blockiert nur IPs, die CrowdSec bereits in der LAPI kennt.
+
+**Kurzüberblick – so hängt alles zusammen:**
+
+1. CrowdSec-Container (Community Applications) installieren  
+2. Zoraxy-**Logs** in CrowdSec einbinden (`acquis.yaml` + Volume)  
+3. Zoraxy-**Collection** im Hub installieren (Parser für `type: zoraxy`)  
+4. **Bouncer** anlegen → API-Key ins Zoraxy-Image  
+5. Zoraxy-Container: LAPI-URL + Plugin + **Tags** (siehe unten)
+
+> 📖 CrowdSec-Unraid-Template (IBRACORP): [docs.ibracorp.io](https://docs.ibracorp.io) · Zoraxy-Diskussion: [tobychui/zoraxy#338](https://github.com/tobychui/zoraxy/discussions/338)
+
+### Schritt 1 – CrowdSec aus Community Applications
+
+1. In Unraid **Community Applications** öffnen  
+2. Nach **`crowdsec`** suchen (Entwickler: **crowdsecurity**, Maintainer z. B. IBRACORP)  
+3. Container installieren und starten  
+4. Merken: **Container-Name** (oft `crowdsec`) und wo die Config auf dem Host liegt (z. B. `/mnt/user/Docker/crowdsec/` oder `/mnt/user/appdata/crowdsec/`)
+
+Die LAPI ist standardmäßig unter Port **8080** erreichbar.
+
+### Schritt 2 – Zoraxy-Logs für CrowdSec freigeben
+
+CrowdSec muss die Zoraxy-Access-Logs lesen (`zr_*.log`, monatliches Rollover). Dafür brauchst du **zwei Dinge**: ein Volume im CrowdSec-Container und eine `acquis.yaml`.
+
+#### Volume im CrowdSec-Container (Unraid)
+
+Im CrowdSec-Container **Path hinzufügen** (Werte an dein Setup anpassen):
+
+| Host-Pfad (Beispiel) | Container-Pfad | Modus |
+|----------------------|------------------|-------|
+| `/mnt/user/appdata/zoraxy/config/log` | `/var/log/zoraxy` | `ro` |
+
+**Host-Pfad finden:** Dort liegen die Dateien `zr_*.log` – oft unter dem Zoraxy-**Config**-Volume in einem Unterordner `log/`. Wenn dein Config-Pfad abweicht, den Ordner mit den `zr_*.log` auf dem Host wählen.
+
+> Beispiel aus einem funktionierenden Setup: Host-Config unter `/mnt/user/Docker/crowdsec/`, Zoraxy-Logs vom Config-Volume nach `/var/log/zoraxy` im CrowdSec-Container gemountet.
+
+#### `acquis.yaml` anlegen
+
+Datei auf dem Host im CrowdSec-Config-Ordner, z. B.:
+
+`/mnt/user/Docker/crowdsec/acquis.yaml`
+
+(bzw. wo dein Template `/etc/crowdsec` mapped – Pfad anpassen)
+
+Inhalt:
+
+```yaml
+---
+filenames:
+  - "/var/log/zoraxy/zr_*.log"   ## Alle Zoraxy-Logs (monatliches Rollover)
+labels:
+  type: "zoraxy"                ## Muss zum installierten Parser passen
+```
+
+Der Pfad in `filenames` ist der **Pfad im CrowdSec-Container** (also `/var/log/zoraxy/...`), nicht der Unraid-Host-Pfad.
+
+Manche Setups nutzen statt einer einzelnen `acquis.yaml` Dateien unter `/etc/crowdsec/acquis.d/` – dann dieselbe Konfiguration z. B. als `zoraxy.yaml` dort ablegen.
+
+**CrowdSec-Container danach neu starten.**
+
+### Schritt 3 – Zoraxy-Collection (Parser) installieren
+
+Damit CrowdSec die Logs auswerten kann, die Collection mit Zoraxy-Parser installieren:
+
+```bash
+docker exec -it crowdsec cscli collections install raithmir/zoraxy-logs
+```
+
+Hub-Übersicht: [Raithmir – zoraxy collection](https://app.crowdsec.net/hub/author/Raithmir/collections/zoraxy)
+
+Optional prüfen:
+
+```bash
+docker exec -it crowdsec cscli collections list
+docker exec -it crowdsec cscli metrics
+```
+
+### Schritt 4 – Netzwerk: Zoraxy ↔ CrowdSec LAPI
+
+Der Zoraxy-Container muss die CrowdSec-**LAPI** erreichen (Port 8080).
+
+**Option A – Gleiches benutzerdefiniertes Docker-Netzwerk (empfohlen)**  
+Beide Container im selben Custom Network; dann z. B.:
+
+`CROWDSEC_AGENT_URL=http://crowdsec:8080`
+
+(`crowdsec` = Container-Name von CrowdSec)
+
+**Option B – Bridge / unterschiedliche Netzwerke**  
+IP des Unraid-Hosts oder des CrowdSec-Containers verwenden, z. B.:
+
+`CROWDSEC_AGENT_URL=http://192.168.1.10:8080`
+
+### Schritt 5 – Bouncer anlegen & Zoraxy verbinden
+
+Bouncer in CrowdSec registrieren (Name frei wählbar):
+
+```bash
+docker exec -it crowdsec cscli bouncers add zoraxy-bouncer
+```
+
+Den angezeigten **API-Key** kopieren und im **Zoraxy-CrowdSec-Bouncer**-Container eintragen:
+
+- **CrowdSec API Key** = der Key von oben  
+- **CrowdSec Agent URL** = LAPI-URL aus Schritt 4  
+
+Danach Zoraxy-Container neu starten.
+
+### Schritt 6 – Prüfen ob die Kette funktioniert
+
+```bash
+# Bouncer registriert?
+docker exec -it crowdsec cscli bouncers list
+
+# Kommen Entscheidungen an? (nach etwas Traffic über Zoraxy)
+docker exec -it crowdsec cscli decisions list
+
+# Laufen Metriken / Parser?
+docker exec -it crowdsec cscli metrics
+```
+
+Wenn `decisions list` leer bleibt: zuerst Logs (`acquis.yaml`, Volume, `zr_*.log`-Pfad) und Collection prüfen – **ohne Logs keine neuen Bans**.
+
+---
+
 ## CrowdSec API Key holen
 
 Führe diesen Befehl in deinem CrowdSec-Container aus:
@@ -175,6 +305,12 @@ Nach dem ersten Start:
 → Stelle sicher dass Zoraxy und CrowdSec im selben Docker-Netzwerk sind
 → Alternativ die direkte IP verwenden: `http://192.168.1.xxx:8080`
 
+**Keine Bans / leere `cscli decisions list`**
+→ Zoraxy-Logs in CrowdSec gemountet? (`/var/log/zoraxy/zr_*.log` im Container sichtbar?)
+→ `acquis.yaml` mit `type: zoraxy` vorhanden?
+→ `cscli collections install raithmir/zoraxy-logs` ausgeführt?
+→ Traffic läuft über Zoraxy-Proxy-Regeln mit aktiviertem Plugin-**Tag**?
+
 **Port bereits belegt**
 → Ändere den Host-Port in den Unraid Container-Einstellungen (nur den linken Wert!)
 
@@ -188,7 +324,7 @@ This Docker image combines [Zoraxy](https://github.com/tobychui/zoraxy) – a mo
 
 **The plugin is pre-installed** – no manual download required.
 
-**The `config.yaml` is created automatically on first start** – simply enter your CrowdSec API key and URL directly in the Unraid container settings, no need to edit files manually.
+**The plugin `config.yaml` is generated on container start from environment variables** – enter your CrowdSec API key and LAPI URL in Unraid, no manual file editing required.
 
 **CrowdSec itself is not included** – you need a separate CrowdSec instance (e.g. as its own Docker container).
 
@@ -214,7 +350,7 @@ Enter these values directly in Unraid (or docker-compose) – the `config.yaml` 
 | `FASTGEOIP` | `true` | ❌ No | Enable fast GeoIP database |
 | `DOCKER` | `true` | ❌ No | Docker compatibility mode |
 
-> 💡 The `config.yaml` is only created on **first start**. If the file already exists, it will **not be overwritten** – you can also edit it manually.
+> 💡 The plugin `config.yaml` is **rewritten on every container start** from the environment variables. Edit values in Unraid rather than hand-editing the file.
 
 ---
 
@@ -233,7 +369,7 @@ Enter these values directly in Unraid (or docker-compose) – the `config.yaml` 
 | Container Path | Description | Unraid Default Path |
 |---|---|---|
 | `/opt/zoraxy/config/` | Zoraxy config, certificates, logs | `/mnt/user/appdata/zoraxy/config` |
-| `/opt/zoraxy/plugins/` | Plugin data incl. auto-created `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
+| `/opt/zoraxy/plugin/` | Plugin data incl. auto-created `config.yaml` | `/mnt/user/appdata/zoraxy/plugin` |
 | `/var/run/docker.sock` | Docker socket (for Docker mode) | `/var/run/docker.sock` |
 | `/etc/localtime` | Timezone from host | `/etc/localtime` |
 
@@ -304,6 +440,123 @@ If port 80 or 443 are already in use:
 
 ---
 
+## Set up CrowdSec on Unraid (prerequisite)
+
+This image only ships the **bouncer inside Zoraxy**. You must run **CrowdSec separately**. Without CrowdSec analyzing traffic, the bouncer can only block IPs CrowdSec already knows via the LAPI.
+
+**Overview – how the pieces fit together:**
+
+1. Install the CrowdSec container (Community Applications)  
+2. Feed Zoraxy **logs** into CrowdSec (`acquis.yaml` + volume mount)  
+3. Install the Zoraxy **collection** from the Hub (parser for `type: zoraxy`)  
+4. Create a **bouncer** → paste API key into this Zoraxy image  
+5. Zoraxy container: LAPI URL + plugin + **tags** (see below)
+
+> 📖 CrowdSec on Unraid (IBRACORP template): [docs.ibracorp.io](https://docs.ibracorp.io) · Zoraxy thread: [tobychui/zoraxy#338](https://github.com/tobychui/zoraxy/discussions/338)
+
+### Step 1 – CrowdSec from Community Applications
+
+1. Open **Community Applications** on Unraid  
+2. Search for **`crowdsec`** (publisher **crowdsecurity**, maintainer e.g. IBRACORP)  
+3. Install and start the container  
+4. Note the **container name** (often `crowdsec`) and host config path (e.g. `/mnt/user/Docker/crowdsec/` or `/mnt/user/appdata/crowdsec/`)
+
+LAPI is usually on port **8080**.
+
+### Step 2 – Expose Zoraxy logs to CrowdSec
+
+CrowdSec must read Zoraxy access logs (`zr_*.log`, monthly rollover). You need a **volume mount** on the CrowdSec container and an **`acquis.yaml`**.
+
+#### Volume on the CrowdSec container (Unraid)
+
+Add a **Path** mapping (adjust to your layout):
+
+| Host path (example) | Container path | Mode |
+|---------------------|------------------|------|
+| `/mnt/user/appdata/zoraxy/config/log` | `/var/log/zoraxy` | `ro` |
+
+**Find the host path:** use the directory that contains `zr_*.log` files—often under the Zoraxy **config** volume in a `log/` subfolder.
+
+#### Create `acquis.yaml`
+
+On the host in your CrowdSec config folder, e.g.:
+
+`/mnt/user/Docker/crowdsec/acquis.yaml`
+
+(match wherever your template maps `/etc/crowdsec`)
+
+Content:
+
+```yaml
+---
+filenames:
+  - "/var/log/zoraxy/zr_*.log"   ## All Zoraxy logs (monthly rollover)
+labels:
+  type: "zoraxy"                  ## Must match the installed parser
+```
+
+Paths in `filenames` are **inside the CrowdSec container** (`/var/log/zoraxy/...`), not the Unraid host path.
+
+Some setups use `/etc/crowdsec/acquis.d/` instead—same YAML as e.g. `zoraxy.yaml` there.
+
+**Restart the CrowdSec container** after changes.
+
+### Step 3 – Install Zoraxy collection (parser)
+
+```bash
+docker exec -it crowdsec cscli collections install raithmir/zoraxy-logs
+```
+
+Hub: [Raithmir – zoraxy collection](https://app.crowdsec.net/hub/author/Raithmir/collections/zoraxy)
+
+Optional checks:
+
+```bash
+docker exec -it crowdsec cscli collections list
+docker exec -it crowdsec cscli metrics
+```
+
+### Step 4 – Network: Zoraxy ↔ CrowdSec LAPI
+
+The Zoraxy container must reach CrowdSec **LAPI** (port 8080).
+
+**Option A – Same custom Docker network (recommended)**  
+Both containers on one network; then e.g.:
+
+`CROWDSEC_AGENT_URL=http://crowdsec:8080`
+
+(`crowdsec` = your CrowdSec container name)
+
+**Option B – Bridge / different networks**  
+Use the Unraid host IP or CrowdSec container IP, e.g.:
+
+`CROWDSEC_AGENT_URL=http://192.168.1.10:8080`
+
+### Step 5 – Create bouncer & connect Zoraxy
+
+```bash
+docker exec -it crowdsec cscli bouncers add zoraxy-bouncer
+```
+
+Copy the **API key** into the **Zoraxy-CrowdSec-Bouncer** container:
+
+- **CrowdSec API Key** = key from above  
+- **CrowdSec Agent URL** = LAPI URL from step 4  
+
+Restart the Zoraxy container.
+
+### Step 6 – Verify the pipeline
+
+```bash
+docker exec -it crowdsec cscli bouncers list
+docker exec -it crowdsec cscli decisions list
+docker exec -it crowdsec cscli metrics
+```
+
+If `decisions list` stays empty, fix logs first (`acquis.yaml`, volume, `zr_*.log` path) and the collection—**no logs means no new bans**.
+
+---
+
 ## Getting the CrowdSec API Key
 
 Run this command in your CrowdSec container:
@@ -339,6 +592,12 @@ After the first start:
 → Make sure Zoraxy and CrowdSec are in the same Docker network
 → Alternatively use the direct IP: `http://192.168.1.xxx:8080`
 
+**No bans / empty `cscli decisions list`**
+→ Are Zoraxy logs mounted into CrowdSec? (`/var/log/zoraxy/zr_*.log` visible in the container?)
+→ `acquis.yaml` with `type: zoraxy` present?
+→ Ran `cscli collections install raithmir/zoraxy-logs`?
+→ Traffic goes through Zoraxy proxy rules with the plugin **tag** enabled?
+
 **Port already in use**
 → Change the host port in the Unraid container settings (left value only!)
 
@@ -358,7 +617,7 @@ services:
       - "8000:8000"
     volumes:
       - ./config:/opt/zoraxy/config/
-      - ./plugin:/opt/zoraxy/plugins/
+      - ./plugin:/opt/zoraxy/plugin/
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime
     extra_hosts:

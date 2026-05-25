@@ -11,11 +11,15 @@ services:
       - "8000:8000"
     volumes:
       - ./config:/opt/zoraxy/config/
-      - ./plugin:/opt/zoraxy/plugins/
+      - ./plugin:/opt/zoraxy/plugin/
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
+      - CROWDSEC_API_KEY=
+      - CROWDSEC_AGENT_URL=http://crowdsec:8080
+      - CROWDSEC_LOG_LEVEL=warning
+      - CROWDSEC_CLOUDFLARE=false
       - FASTGEOIP=true
       - DOCKER=true

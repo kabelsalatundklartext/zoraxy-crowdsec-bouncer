@@ -57,7 +57,7 @@
     </Volume>
     <Volume>
       <HostDir></HostDir>
-      <ContainerDir>/opt/zoraxy/plugins/</ContainerDir>
+      <ContainerDir>/opt/zoraxy/plugin/</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
     <Volume>
@@ -123,7 +123,7 @@
     Description="DE: Zoraxy-Konfiguration, Zertifikate, Logs. EN: Zoraxy config, certificates, logs."
     Type="Path" Display="always" Required="true" Mask="false"></Config>
 
-  <Config Name="Plugin folder / Plugin-Ordner" Target="/opt/zoraxy/plugins/" Default="" Mode="rw"
+  <Config Name="Plugin folder / Plugin-Ordner" Target="/opt/zoraxy/plugin/" Default="" Mode="rw"
     Description="DE: Plugin-Daten inkl. automatisch erstellter config.yaml. EN: Plugin data incl. auto-generated config.yaml."
     Type="Path" Display="always" Required="true" Mask="false"></Config>
 
