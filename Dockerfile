@@ -1,5 +1,5 @@
 # Versionen – werden automatisch durch auto-update.yml aktualisiert
-ARG ZORAXY_VERSION=v3.3.5-rc4
+ARG ZORAXY_VERSION=v3.3.5-rc5
 FROM zoraxydocker/zoraxy:${ZORAXY_VERSION}
 
 ARG PLUGIN_VERSION=v1.2.3
